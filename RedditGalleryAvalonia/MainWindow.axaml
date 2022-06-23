@@ -1,0 +1,105 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RedditGalleryAvalonia"
+        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
+        x:Class="RedditGalleryAvalonia.MainWindow"
+        Title="RedditGalleryAvalonia">
+    <Window.Resources>
+        <local:BooleanToScrollBarVisibilityConverter x:Key="BooleanToScrollBarVisibility" />
+        <local:CategoryConverter x:Key="CategoryConverter" />
+    </Window.Resources>
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Height" Value="50" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <TextBlock Text="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="White" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Styles>
+    <Grid Background="Black" RowDefinitions="50,*,50">
+        <Border Grid.Row="0" Height="50" VerticalAlignment="Top" BorderThickness="0" >
+            <Border.Background>
+                <SolidColorBrush Color="Black" Opacity="0.25" />
+            </Border.Background>
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <TextBlock Grid.Column="2" Text="{Binding Title}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Foreground="White" />
+                <Button Grid.Column="0" Command="{Binding PreviousImageCommand}">&lt;</Button>
+                <Button Grid.Column="1" Command="{Binding GotoRedditCommand}" FontWeight="Normal">&#x1F310;</Button>
+                <Button Grid.Column="3" Command="{Binding ZoomCommand}" Content="{Binding ZoomButtonText}" />
+                <Button Grid.Column="4" Command="{Binding NextImageCommand}">&gt;</Button>
+            </Grid>
+        </Border>
+        <ScrollViewer Grid.Row="1" Name="ScrollViewer" VerticalScrollBarVisibility="{Binding ZoomedIn, Converter={StaticResource BooleanToScrollBarVisibility}}" HorizontalScrollBarVisibility="Disabled">
+            <Image Source="{Binding ImageSource}" Name="Image" Stretch="Uniform" StretchDirection="DownOnly" />
+        </ScrollViewer>
+        <Border Grid.Row="2" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+            <Border.Background>
+                <SolidColorBrush Color="Black" Opacity="0.25" />
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command="{Binding SelectCategoryCommand}" CommandParameter="Hot">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Width" Value="60" />
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Margin" Value="5" />
+                            <Setter Property="FontSize" Value="18" />
+                            <Setter Property="Background" Value="{Binding Category, Converter={StaticResource CategoryConverter}, ConverterParameter=Hot}" />
+                        </Style>
+                    </Button.Styles>
+                    Hot
+                </Button>
+                <Button Command="{Binding SelectCategoryCommand}" CommandParameter="New">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Width" Value="60" />
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Margin" Value="5" />
+                            <Setter Property="FontSize" Value="18" />
+                            <Setter Property="Background" Value="{Binding Category, Converter={StaticResource CategoryConverter}, ConverterParameter=New}" />
+                        </Style>
+                    </Button.Styles>
+                    New
+                </Button>
+                <Button Command="{Binding SelectCategoryCommand}" CommandParameter="Top">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="MinWidth" Value="60" />
+                            <Setter Property="Width" Value="60" />
+                            <Setter Property="MinHeight" Value="30" />
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Margin" Value="5" />
+                            <Setter Property="FontSize" Value="18" />
+                            <Setter Property="Background" Value="{Binding Category, Converter={StaticResource CategoryConverter}, ConverterParameter=Top}" />
+                        </Style>
+                    </Button.Styles>
+                    Top
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
