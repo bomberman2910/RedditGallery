@@ -54,7 +54,10 @@
             </Grid>
         </Border>
         <ScrollViewer Grid.Row="1" Name="ScrollViewer" VerticalScrollBarVisibility="{Binding ZoomedIn, Converter={StaticResource BooleanToScrollBarVisibility}}" HorizontalScrollBarVisibility="Disabled">
-            <Image Source="{Binding ImageSource}" Name="Image" Stretch="Uniform" StretchDirection="DownOnly" />
+            <Grid>
+                <Image Source="{Binding ImageSource}" Name="Image" Stretch="Uniform" StretchDirection="DownOnly" />
+                <ProgressRing IsIndeterminate="True" IsVisible="{Binding IsImageLoading}" BackgroundColor="Transparent" ForegroundColor="White" />
+            </Grid>
         </ScrollViewer>
         <Border Grid.Row="2" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
             <Border.Background>

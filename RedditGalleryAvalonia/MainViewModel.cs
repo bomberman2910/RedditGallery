@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Media.Imaging;
 using RedditGallery.Base;
@@ -71,7 +72,13 @@ public class MainViewModel : ViewModelBase
         {
             imageSource = value;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsImageLoading));
         }
+    }
+
+    public bool IsImageLoading
+    {
+        get { return ImageSource is null; }
     }
 
     public Post CurrentPost
@@ -80,6 +87,7 @@ public class MainViewModel : ViewModelBase
         set
         {
             currentPost = value;
+            Title = currentPost.Title;
             RaisePropertyChanged();
             TryGetImageForPost();
         }
@@ -103,15 +111,20 @@ public class MainViewModel : ViewModelBase
             };
 
             Category = "New";
-
-            CurrentPost = apiController.GetPost();
-            while (!CurrentPost.Type.Equals("image"))
-                CurrentPost = apiController.GetPost(after: CurrentPost.Name);
+            GetFirstPost();
         }
         catch (Exception ex)
         {
             mainWindow.ShowMessageBox(ex.Message);
         }
+    }
+
+    private async void GetFirstPost()
+    {
+        var firstPost = await apiController.GetPostAsync();
+        while (!firstPost.Type.Equals("image"))
+            firstPost = await apiController.GetPostAsync(after: firstPost.Name);
+        CurrentPost = firstPost;
     }
 
     private void OnGotoReddit()
@@ -126,16 +139,20 @@ public class MainViewModel : ViewModelBase
     private void OnZoom()
     {
         ZoomedIn = !ZoomedIn;
+        ImageSource = null;
+        TryGetImageForPost();
     }
 
-    private void OnNextImage()
+    private async void OnNextImage()
     {
-        var nextPost = apiController.GetPost(after: CurrentPost.Name);
+        Title = string.Empty;
+        ImageSource = null;
+        var nextPost = await apiController.GetPostAsync(after: CurrentPost.Name);
         if (nextPost is null)
             return;
         while (!nextPost.Type.Equals("image") || nextPost.MediaLink.Contains(".gif"))
         {
-            nextPost = apiController.GetPost(after: nextPost.Name);
+            nextPost = await apiController.GetPostAsync(after: nextPost.Name);
             if (nextPost is null)
                 return;
         }
@@ -143,14 +160,16 @@ public class MainViewModel : ViewModelBase
         CurrentPost = nextPost;
     }
 
-    private void OnPreviousImage()
+    private async void OnPreviousImage()
     {
-        var previousPost = apiController.GetPost(CurrentPost.Name);
+        Title = string.Empty;
+        ImageSource = null;
+        var previousPost = await apiController.GetPostAsync(CurrentPost.Name);
         if (previousPost is null)
             return;
         while (!previousPost.Type.Equals("image") || previousPost.MediaLink.Contains(".gif"))
         {
-            previousPost = apiController.GetPost(previousPost.Name);
+            previousPost = await apiController.GetPostAsync(previousPost.Name);
             if (previousPost is null)
                 return;
         }
@@ -161,16 +180,16 @@ public class MainViewModel : ViewModelBase
     private void OnSelectCategory(string categoryParameter)
     {
         Category = categoryParameter;
-        apiController.GetPost();
+        Title = string.Empty;
+        ImageSource = null;
+        GetFirstPost();
     }
 
-    private void TryGetImageForPost()
+    private async void TryGetImageForPost()
     {
         try
         {
-            ImageSource = null;
-            ImageSource = RetrieveImage(currentPost.MediaLink);
-            Title = currentPost.Title;
+            ImageSource = await RetrieveImageAsync(currentPost.MediaLink);
         }
         catch
         {
@@ -179,12 +198,12 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private Bitmap RetrieveImage(string url)
+    private async Task<Bitmap> RetrieveImageAsync(string url)
     {
         using var client = new HttpClient();
-        var result = client.GetStreamAsync(url).Result;
+        var result = await client.GetStreamAsync(url);
         var bufferStream = new MemoryStream();
-        result.CopyTo(bufferStream);
+        await result.CopyToAsync(bufferStream);
         bufferStream.Position = 0;
         var bitmapImage = new Bitmap(bufferStream);
         result.Dispose();

@@ -173,9 +173,6 @@ namespace RedditGallery.Base
         [JsonPropertyName("thumbnail")]
         public Uri Thumbnail { get; set; }
 
-        [JsonPropertyName("edited")]
-        public bool Edited { get; set; }
-
         [JsonPropertyName("author_flair_css_class")]
         public string AuthorFlairCssClass { get; set; }
 

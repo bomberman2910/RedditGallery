@@ -7,6 +7,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace RedditGallery.Base;
 
@@ -67,7 +68,7 @@ public class RedditApiController
         return accessToken.AccessToken;
     }
 
-    public Post GetPost(string before = null, string after = null)
+    public async Task<Post> GetPostAsync(string before = null, string after = null)
     {
         const string baseUrl = "https://oauth.reddit.com/";
         var parameters = new List<string>
@@ -87,10 +88,10 @@ public class RedditApiController
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
         client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
         var url = $"{baseUrl}{CurrentSubRedditLink}/{CurrentPostCategory.ToString().ToLower()}?{string.Join('&', parameters)}";
-        var response = client.GetAsync(url).Result;
+        var response = await client.GetAsync(url);
         if(!response.IsSuccessStatusCode)
             throw new Exception($"Error occured while getting post (StatusCode: {(int)response.StatusCode} {response.StatusCode})");
-        var contents = response.Content.ReadAsStringAsync().Result;
+        var contents = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<RedditResult>(contents, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
         if (result is null || result.Data.Children.Length == 0)
             return null;
