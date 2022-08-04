@@ -105,17 +105,15 @@ public class MainViewModel : ViewModelBase
 
         try
         {
-            apiController = new RedditApiController
-            {
-                CurrentSubRedditLink = "r/unixporn"
-            };
-
-            Category = "New";
+            apiController = new RedditApiController();
+            apiController.LoadApplicationState();
+            Category = apiController.CurrentPostCategory.ToString();
+            
             GetFirstPost();
         }
         catch (Exception ex)
         {
-            mainWindow.ShowMessageBox(ex.Message);
+            mainWindow.ShowMessageBox(ex.Message, true);
         }
     }
 

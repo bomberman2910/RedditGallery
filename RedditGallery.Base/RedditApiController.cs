@@ -15,11 +15,15 @@ public class RedditApiController
 {
     private readonly Credentials credentials;
     private const string CredentialsFileName = "credentials.config";
+    private const string SubRedditListFileName = "subreddits.config";
+    private const string DefaultSubRedditLink = "r/unixporn";
     private const string UserAgent = "windows:redgallery:v0.0.1 (by /u/kokoroatariganai)";
     private AccessToken currentAccessToken;
+    private ApplicationState state;
 
-    public string CurrentSubRedditLink { get; set; } = string.Empty;
-    public PostCategory CurrentPostCategory { get; set; } = PostCategory.New;
+    public string CurrentSubRedditLink { get { return state.CurrentSubRedditLink; } set {state.CurrentSubRedditLink = value; } }
+    public PostCategory CurrentPostCategory { get {return state.CurrentPostCategory; } set {state.CurrentPostCategory = value; } }
+    public List<string> SubRedditList { get { return state.SubRedditList; } set { state.SubRedditList = value;} }
 
     public RedditApiController()
     {
@@ -40,7 +44,54 @@ public class RedditApiController
         if (readCredentials is null || readCredentials.IsIncomplete())
             throw new InvalidCredentialException($"The credentials in file {CredentialsFileName} seem to be corrupt.");
         credentials = readCredentials;
+
         GetAccessToken();
+    }
+
+    public void LoadApplicationState()
+    {
+        var subRedditListFileExists = File.Exists(SubRedditListFileName);
+        if(!subRedditListFileExists)
+        {
+            state = new ApplicationState {
+                CurrentSubRedditLink = DefaultSubRedditLink,
+                SubRedditList = new List<string> {
+                    DefaultSubRedditLink
+                }
+            };
+            var newStateString = JsonSerializer.Serialize(state, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(SubRedditListFileName, newStateString);
+        }
+        else
+        {
+            var subRedditListFileContent = File.ReadAllText(SubRedditListFileName);
+            ApplicationState readSubRedditList;
+            try
+            {
+                readSubRedditList = JsonSerializer.Deserialize<ApplicationState>(subRedditListFileContent);
+            }
+            catch(JsonException _)
+            {
+                state = new ApplicationState {
+                    CurrentSubRedditLink = DefaultSubRedditLink,
+                    SubRedditList = new List<string> {
+                        DefaultSubRedditLink
+                    }
+                };
+                throw new InvalidDataException($"Data in file {SubRedditListFileName} seems to be corrupt. Loading defaults.");
+            }
+            state = new ApplicationState {
+                CurrentSubRedditLink = DefaultSubRedditLink,
+                SubRedditList = new List<string> {
+                    DefaultSubRedditLink
+                }
+            };
+            if(readSubRedditList is null)
+                    throw new InvalidDataException($"Data in file {SubRedditListFileName} seems to be corrupt. Loading defaults.");
+        }
     }
 
     private string GetAccessToken()
@@ -116,6 +167,13 @@ public class RedditApiController
             After = postAfter
         };
     }
+}
+
+internal class ApplicationState
+{
+    public string CurrentSubRedditLink { get; set; } = string.Empty;
+    public PostCategory CurrentPostCategory { get; set; } = PostCategory.New;
+    public List<string> SubRedditList { get; set; } = new List<string>();
 }
 
 internal class AccessToken
