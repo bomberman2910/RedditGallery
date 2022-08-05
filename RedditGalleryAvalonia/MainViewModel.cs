@@ -20,6 +20,8 @@ public class MainViewModel : ViewModelBase
     private Bitmap imageSource;
     private string title;
     private bool zoomedIn;
+    private List<string> subRedditList;
+    private string currentSubReddit;
     private readonly MainWindow mainWindow;
 
     public ICommand PreviousImageCommand { get; }
@@ -52,6 +54,30 @@ public class MainViewModel : ViewModelBase
             category = value;
             RaisePropertyChanged();
             apiController.CurrentPostCategory = Enum.Parse<PostCategory>(category);
+        }
+    }
+
+    public List<string> SubRedditList
+    {
+        get { return subRedditList; }
+        set
+        {
+            subRedditList = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string CurrentSubReddit
+    {
+        get { return currentSubReddit; }
+        set
+        {
+            currentSubReddit = value;
+            RaisePropertyChanged();
+            apiController.CurrentSubRedditLink = currentSubReddit;
+            ImageSource = null;
+            Title = string.Empty;
+            GetFirstPost();
         }
     }
 
@@ -108,7 +134,8 @@ public class MainViewModel : ViewModelBase
             apiController = new RedditApiController();
             apiController.LoadApplicationState();
             Category = apiController.CurrentPostCategory.ToString();
-            
+            SubRedditList = apiController.SubRedditList;
+            CurrentSubReddit = apiController.CurrentSubRedditLink;
             GetFirstPost();
         }
         catch (Exception ex)
@@ -116,7 +143,7 @@ public class MainViewModel : ViewModelBase
             mainWindow.ShowMessageBox(ex.Message, true);
         }
     }
-    
+
     public void OnClosing()
     {
         apiController.SaveApplicationState();
