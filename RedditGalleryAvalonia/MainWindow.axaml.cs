@@ -21,6 +21,10 @@ namespace RedditGalleryAvalonia
                 if(fatal)
                     Environment.Exit(1);
             };
+            Closing += (sender, args) =>
+            {
+                ((MainViewModel)DataContext).OnClosing();
+            };
             DataContext = new MainViewModel(this);
         }
 

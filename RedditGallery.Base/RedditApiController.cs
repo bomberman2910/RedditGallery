@@ -21,9 +21,19 @@ public class RedditApiController
     private AccessToken currentAccessToken;
     private ApplicationState state;
 
-    public string CurrentSubRedditLink { get { return state.CurrentSubRedditLink; } set {state.CurrentSubRedditLink = value; } }
-    public PostCategory CurrentPostCategory { get {return state.CurrentPostCategory; } set {state.CurrentPostCategory = value; } }
-    public List<string> SubRedditList { get { return state.SubRedditList; } set { state.SubRedditList = value;} }
+    public string CurrentSubRedditLink { get { return state.CurrentSubRedditLink; } set { state.CurrentSubRedditLink = value; } }
+
+    public void SaveApplicationState()
+    {
+        var stateString = JsonSerializer.Serialize(state, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        File.WriteAllText(SubRedditListFileName, stateString);
+    }
+
+    public PostCategory CurrentPostCategory { get { return state.CurrentPostCategory; } set { state.CurrentPostCategory = value; } }
+    public List<string> SubRedditList { get { return state.SubRedditList; } set { state.SubRedditList = value; } }
 
     public RedditApiController()
     {
@@ -51,9 +61,10 @@ public class RedditApiController
     public void LoadApplicationState()
     {
         var subRedditListFileExists = File.Exists(SubRedditListFileName);
-        if(!subRedditListFileExists)
+        if (!subRedditListFileExists)
         {
-            state = new ApplicationState {
+            state = new ApplicationState
+            {
                 CurrentSubRedditLink = DefaultSubRedditLink,
                 SubRedditList = new List<string> {
                     DefaultSubRedditLink
@@ -73,9 +84,10 @@ public class RedditApiController
             {
                 readSubRedditList = JsonSerializer.Deserialize<ApplicationState>(subRedditListFileContent);
             }
-            catch(JsonException _)
+            catch (JsonException _)
             {
-                state = new ApplicationState {
+                state = new ApplicationState
+                {
                     CurrentSubRedditLink = DefaultSubRedditLink,
                     SubRedditList = new List<string> {
                         DefaultSubRedditLink
@@ -83,14 +95,16 @@ public class RedditApiController
                 };
                 throw new InvalidDataException($"Data in file {SubRedditListFileName} seems to be corrupt. Loading defaults.");
             }
-            state = new ApplicationState {
+            state = new ApplicationState
+            {
                 CurrentSubRedditLink = DefaultSubRedditLink,
                 SubRedditList = new List<string> {
                     DefaultSubRedditLink
                 }
             };
-            if(readSubRedditList is null)
-                    throw new InvalidDataException($"Data in file {SubRedditListFileName} seems to be corrupt. Loading defaults.");
+            if (readSubRedditList is null)
+                throw new InvalidDataException($"Data in file {SubRedditListFileName} seems to be corrupt. Loading defaults.");
+            state = readSubRedditList;
         }
     }
 
@@ -98,7 +112,7 @@ public class RedditApiController
     {
         const string accessTokenUrl = "https://www.reddit.com/api/v1/access_token";
 
-        if(credentials.IsIncomplete())
+        if (credentials.IsIncomplete())
             throw new InvalidCredentialException($"Credentials seem to be corrupt.");
 
         if (currentAccessToken is not null && !currentAccessToken.IsExpired())
@@ -140,7 +154,7 @@ public class RedditApiController
         client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent);
         var url = $"{baseUrl}{CurrentSubRedditLink}/{CurrentPostCategory.ToString().ToLower()}?{string.Join('&', parameters)}";
         var response = await client.GetAsync(url);
-        if(!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
             throw new Exception($"Error occured while getting post (StatusCode: {(int)response.StatusCode} {response.StatusCode})");
         var contents = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<RedditResult>(contents, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
@@ -199,7 +213,7 @@ internal class AccessToken
 
 public enum PostCategory
 {
-    Hot,New,Top
+    Hot, New, Top
 }
 
 internal class Credentials
@@ -223,7 +237,7 @@ internal class Credentials
 
     public string GetBase64String()
     {
-        if(!string.IsNullOrEmpty(base64String))
+        if (!string.IsNullOrEmpty(base64String))
             return base64String;
 
         var byteArray = new UTF8Encoding().GetBytes($"{ClientToken}:{ClientSecret}");

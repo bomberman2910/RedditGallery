@@ -116,6 +116,11 @@ public class MainViewModel : ViewModelBase
             mainWindow.ShowMessageBox(ex.Message, true);
         }
     }
+    
+    public void OnClosing()
+    {
+        apiController.SaveApplicationState();
+    }
 
     private async void GetFirstPost()
     {
