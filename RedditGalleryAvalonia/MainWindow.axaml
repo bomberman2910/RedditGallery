@@ -72,19 +72,36 @@
             <Grid.Background>
                 <SolidColorBrush Color="Black" Opacity="0.25" />
             </Grid.Background>
-            <ComboBox Grid.Column="0" SelectedItem="{Binding CurrentSubReddit}" Items="{Binding SubRedditList}">
-                <ComboBox.Styles>
-                    <Style Selector="ComboBox">
-                        <Setter Property="Height" Value="40" />
-                        <Setter Property="Margin" Value="20 5" />
-                        <Setter Property="FontSize" Value="18" />
-                        <Setter Property="FontWeight" Value="Bold" />
-                        <Setter Property="Background" Value="Black" />
-                        <Setter Property="Padding" Value="10 0 10 0" />
-                        <Setter Property="CornerRadius" Value="5" />
-                    </Style>
-                </ComboBox.Styles>
-            </ComboBox>
+            <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                <Button Command="{Binding EditSubRedditListCommand}">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Width" Value="40" />
+                            <Setter Property="Height" Value="40" />
+                            <Setter Property="Margin" Value="5" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontSize" Value="20" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Style>
+                    </Button.Styles>
+                    &#x270E;
+                </Button>
+                <ComboBox Grid.Column="1" SelectedItem="{Binding CurrentSubReddit}" Items="{Binding SubRedditList}">
+                    <ComboBox.Styles>
+                        <Style Selector="ComboBox">
+                            <Setter Property="Height" Value="40" />
+                            <Setter Property="Margin" Value="5 5" />
+                            <Setter Property="FontSize" Value="18" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                            <Setter Property="Background" Value="Black" />
+                            <Setter Property="Padding" Value="10 0 10 0" />
+                            <Setter Property="CornerRadius" Value="5" />
+                        </Style>
+                    </ComboBox.Styles>
+                </ComboBox>
+            </Grid>
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Command="{Binding SelectCategoryCommand}" CommandParameter="Hot">
                     <Button.Styles>
