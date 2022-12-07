@@ -29,6 +29,7 @@ public class MainViewModel : ViewModelBase
     public ICommand ZoomCommand { get; }
     public ICommand GotoRedditCommand { get; }
     public ICommand SelectCategoryCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
 
     public bool ZoomedIn
     {
@@ -128,6 +129,7 @@ public class MainViewModel : ViewModelBase
         ZoomCommand = new Command(OnZoom);
         GotoRedditCommand = new Command(OnGotoReddit);
         SelectCategoryCommand = new Command<string>(OnSelectCategory);
+        OpenSettingsCommand = new Command(OnOpenSettings);
 
         try
         {
@@ -142,6 +144,11 @@ public class MainViewModel : ViewModelBase
         {
             mainWindow.ShowMessageBox(ex.Message, true);
         }
+    }
+
+    private void OnOpenSettings()
+    {
+        
     }
 
     public void OnClosing()
