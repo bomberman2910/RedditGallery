@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using RedditGallery.Base;
 
@@ -20,7 +22,7 @@ public class MainViewModel : ViewModelBase
     private Bitmap imageSource;
     private string title;
     private bool zoomedIn;
-    private List<string> subRedditList;
+    private ObservableCollection<string> subRedditList;
     private string currentSubReddit;
     private readonly MainWindow mainWindow;
 
@@ -44,7 +46,7 @@ public class MainViewModel : ViewModelBase
 
     public string ZoomButtonText
     {
-        get { return ZoomedIn ? "-" : "+"; }
+        get { return ZoomedIn ? "\u2796" : "\u2795"; }
     }
 
     public string Category
@@ -58,7 +60,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public List<string> SubRedditList
+    public ObservableCollection<string> SubRedditList
     {
         get { return subRedditList; }
         set
@@ -73,7 +75,10 @@ public class MainViewModel : ViewModelBase
         get { return currentSubReddit; }
         set
         {
-            currentSubReddit = value;
+            if(value is null)
+                currentSubReddit = SubRedditList[0];
+            else
+                currentSubReddit = value;
             RaisePropertyChanged();
             apiController.CurrentSubRedditLink = currentSubReddit;
             ImageSource = null;
@@ -129,14 +134,14 @@ public class MainViewModel : ViewModelBase
         ZoomCommand = new Command(OnZoom);
         GotoRedditCommand = new Command(OnGotoReddit);
         SelectCategoryCommand = new Command<string>(OnSelectCategory);
-        OpenSettingsCommand = new Command(OnOpenSettings);
+        OpenSettingsCommand = new Command<Window>(OnOpenSettings);
 
         try
         {
             apiController = new RedditApiController();
             apiController.LoadApplicationState();
             Category = apiController.CurrentPostCategory.ToString();
-            SubRedditList = apiController.SubRedditList;
+            SubRedditList = new ObservableCollection<string>(apiController.SubRedditList);
             CurrentSubReddit = apiController.CurrentSubRedditLink;
             GetFirstPost();
         }
@@ -146,13 +151,17 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private void OnOpenSettings()
+    private async void OnOpenSettings(Window mainWindow)
     {
-        
+        var viewModel = new SettingsViewModel(SubRedditList);
+        var window = new SettingsWindow();
+        window.DataContext = viewModel;
+        await window.ShowDialog(mainWindow);
     }
 
     public void OnClosing()
     {
+        apiController.SubRedditList = new List<string>(SubRedditList);
         apiController.SaveApplicationState();
     }
 

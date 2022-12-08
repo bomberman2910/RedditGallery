@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace AvaloniaAppTemplate.Namespace
+namespace RedditGalleryAvalonia
 {
     public partial class SettingsWindow : Window
     {
