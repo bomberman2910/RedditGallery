@@ -6,6 +6,7 @@ namespace RedditGalleryAvalonia
     public partial class MainWindow : Window
     {
         private bool showText;
+        private bool fatal;
         private string messageText;
 
         public MainWindow()
@@ -17,13 +18,19 @@ namespace RedditGalleryAvalonia
                     return;
                 var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow("Error", messageText);
                 _ = await messageBoxStandardWindow.Show();
-                Environment.Exit(1);
+                if(fatal)
+                    Environment.Exit(1);
+            };
+            Closing += (sender, args) =>
+            {
+                ((MainViewModel)DataContext).OnClosing();
             };
             DataContext = new MainViewModel(this);
         }
 
-        public void ShowMessageBox(string text)
+        public void ShowMessageBox(string text, bool fatal)
         {
+            this.fatal = fatal;
             showText = true;
             messageText = text;
         }

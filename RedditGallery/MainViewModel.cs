@@ -35,7 +35,7 @@ public class MainViewModel : INotifyPropertyChanged
 
             Category = "New";
 
-            CurrentPost = apiController.GetPost();
+            CurrentPost = apiController.GetPostAsync().Result;
         }
         catch (Exception ex)
         {
@@ -44,7 +44,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
 
         while (!CurrentPost.Type.Equals("image"))
-            CurrentPost = apiController.GetPost(after: CurrentPost.Name);
+            CurrentPost = apiController.GetPostAsync(after: CurrentPost.Name).Result;
     }
 
     public ICommand PreviousImageCommand { get; }
@@ -129,12 +129,12 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OnNextImage()
     {
-        var nextPost = apiController.GetPost(after: CurrentPost.Name);
+        var nextPost = apiController.GetPostAsync(after: CurrentPost.Name).Result;
         if (nextPost is null)
             return;
         while (!nextPost.Type.Equals("image") || nextPost.MediaLink.Contains(".gif"))
         {
-            nextPost = apiController.GetPost(after: nextPost.Name);
+            nextPost = apiController.GetPostAsync(after: nextPost.Name).Result;
             if (nextPost is null)
                 return;
         }
@@ -144,12 +144,12 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void OnPreviousImage()
     {
-        var previousPost = apiController.GetPost(before: CurrentPost.Name);
+        var previousPost = apiController.GetPostAsync(before: CurrentPost.Name).Result;
         if (previousPost is null)
             return;
         while (!previousPost.Type.Equals("image") || previousPost.MediaLink.Contains(".gif"))
         {
-            previousPost = apiController.GetPost(before: previousPost.Name);
+            previousPost = apiController.GetPostAsync(before: previousPost.Name).Result;
             if (previousPost is null)
                 return;
         }
@@ -157,10 +157,10 @@ public class MainViewModel : INotifyPropertyChanged
         CurrentPost = previousPost;
     }
 
-    private void OnSelectCategory(string categoryParameter)
+    private async void OnSelectCategory(string categoryParameter)
     {
         Category = categoryParameter;
-        apiController.GetPost();
+        await apiController.GetPostAsync();
     }
 
     private void TryGetImageForPost()

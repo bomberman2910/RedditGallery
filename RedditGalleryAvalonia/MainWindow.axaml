@@ -3,12 +3,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RedditGalleryAvalonia"
-        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
+        mc:Ignorable="d" Width="1024" Height="600"
         x:Class="RedditGalleryAvalonia.MainWindow"
         Title="RedditGalleryAvalonia">
     <Window.Resources>
         <local:BooleanToScrollBarVisibilityConverter x:Key="BooleanToScrollBarVisibility" />
         <local:CategoryConverter x:Key="CategoryConverter" />
+        <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="Black" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="White" Opacity="0.25" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="White" Opacity="0.5" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="White" Opacity="0.5" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="White" Opacity="0.5" />
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPressed" Color="White" Opacity="0.5" />
+        <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="White" Opacity="0.5" />
+        <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="White" Opacity="0.25" />
+        <SolidColorBrush x:Key="ComboBoxDropDownGlyphForeground" Color="White" />
     </Window.Resources>
     <Window.Styles>
         <Style Selector="TextBlock">
@@ -59,11 +68,50 @@
                 <ProgressRing IsIndeterminate="True" IsVisible="{Binding IsImageLoading}" BackgroundColor="Transparent" ForegroundColor="White" />
             </Grid>
         </ScrollViewer>
-        <Border Grid.Row="2" Height="50" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
-            <Border.Background>
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*">
+            <Grid.Background>
                 <SolidColorBrush Color="Black" Opacity="0.25" />
-            </Border.Background>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            </Grid.Background>
+            <Grid Grid.Column="0" ColumnDefinitions="Auto,*">
+                <Button Grid.Column="0" Command="{Binding OpenSettingsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Width" Value="40" />
+                            <Setter Property="Height" Value="40" />
+                            <Setter Property="Margin" Value="5" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontSize" Value="20" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Style>
+                    </Button.Styles>
+                    &#x270E;
+                </Button>
+                <ComboBox Grid.Column="1" SelectedItem="{Binding CurrentSubReddit}" Items="{Binding SubRedditList}">
+                    <ComboBox.Styles>
+                        <Style Selector="ComboBox">
+                            <Setter Property="Height" Value="40" />
+                            <Setter Property="Margin" Value="5 5" />
+                            <Setter Property="FontSize" Value="18" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                            <Setter Property="Background" Value="Black" />
+                            <Setter Property="Padding" Value="10 0 10 0" />
+                            <Setter Property="CornerRadius" Value="5" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                        </Style>
+                        <Style Selector="ComboBox:pointerover">
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                            <Setter Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="White" Opacity="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ComboBox.Styles>
+                </ComboBox>
+            </Grid>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Command="{Binding SelectCategoryCommand}" CommandParameter="Hot">
                     <Button.Styles>
                         <Style Selector="Button">
@@ -103,6 +151,6 @@
                     Top
                 </Button>
             </StackPanel>
-        </Border>
+        </Grid>
     </Grid>
 </Window>

@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # User
 credentials.config
 .vscode/
+subreddits.config

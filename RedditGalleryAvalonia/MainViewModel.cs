@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using RedditGallery.Base;
 
@@ -20,6 +22,8 @@ public class MainViewModel : ViewModelBase
     private Bitmap imageSource;
     private string title;
     private bool zoomedIn;
+    private ObservableCollection<string> subRedditList;
+    private string currentSubReddit;
     private readonly MainWindow mainWindow;
 
     public ICommand PreviousImageCommand { get; }
@@ -27,6 +31,7 @@ public class MainViewModel : ViewModelBase
     public ICommand ZoomCommand { get; }
     public ICommand GotoRedditCommand { get; }
     public ICommand SelectCategoryCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
 
     public bool ZoomedIn
     {
@@ -41,7 +46,7 @@ public class MainViewModel : ViewModelBase
 
     public string ZoomButtonText
     {
-        get { return ZoomedIn ? "-" : "+"; }
+        get { return ZoomedIn ? "\u2796" : "\u2795"; }
     }
 
     public string Category
@@ -52,6 +57,33 @@ public class MainViewModel : ViewModelBase
             category = value;
             RaisePropertyChanged();
             apiController.CurrentPostCategory = Enum.Parse<PostCategory>(category);
+        }
+    }
+
+    public ObservableCollection<string> SubRedditList
+    {
+        get { return subRedditList; }
+        set
+        {
+            subRedditList = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string CurrentSubReddit
+    {
+        get { return currentSubReddit; }
+        set
+        {
+            if(value is null)
+                currentSubReddit = SubRedditList[0];
+            else
+                currentSubReddit = value;
+            RaisePropertyChanged();
+            apiController.CurrentSubRedditLink = currentSubReddit;
+            ImageSource = null;
+            Title = string.Empty;
+            GetFirstPost();
         }
     }
 
@@ -102,21 +134,35 @@ public class MainViewModel : ViewModelBase
         ZoomCommand = new Command(OnZoom);
         GotoRedditCommand = new Command(OnGotoReddit);
         SelectCategoryCommand = new Command<string>(OnSelectCategory);
+        OpenSettingsCommand = new Command<Window>(OnOpenSettings);
 
         try
         {
-            apiController = new RedditApiController
-            {
-                CurrentSubRedditLink = "r/unixporn"
-            };
-
-            Category = "New";
+            apiController = new RedditApiController();
+            apiController.LoadApplicationState();
+            Category = apiController.CurrentPostCategory.ToString();
+            SubRedditList = new ObservableCollection<string>(apiController.SubRedditList);
+            CurrentSubReddit = apiController.CurrentSubRedditLink;
             GetFirstPost();
         }
         catch (Exception ex)
         {
-            mainWindow.ShowMessageBox(ex.Message);
+            mainWindow.ShowMessageBox(ex.Message, true);
         }
+    }
+
+    private async void OnOpenSettings(Window mainWindow)
+    {
+        var viewModel = new SettingsViewModel(SubRedditList);
+        var window = new SettingsWindow();
+        window.DataContext = viewModel;
+        await window.ShowDialog(mainWindow);
+    }
+
+    public void OnClosing()
+    {
+        apiController.SubRedditList = new List<string>(SubRedditList);
+        apiController.SaveApplicationState();
     }
 
     private async void GetFirstPost()
