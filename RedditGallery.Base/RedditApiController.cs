@@ -84,7 +84,7 @@ public class RedditApiController
             {
                 readSubRedditList = JsonSerializer.Deserialize<ApplicationState>(subRedditListFileContent);
             }
-            catch (JsonException _)
+            catch (JsonException)
             {
                 state = new ApplicationState
                 {
