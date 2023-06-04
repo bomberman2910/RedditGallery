@@ -201,7 +201,7 @@ namespace RedditGallery.Base
         public string LinkFlairType { get; set; }
 
         [JsonPropertyName("wls")]
-        public long Wls { get; set; }
+        public long? Wls { get; set; }
 
         [JsonPropertyName("removed_by_category")]
         public object RemovedByCategory { get; set; }
